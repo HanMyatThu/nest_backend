@@ -11,4 +11,5 @@ export const VALIDATION_PIPE_OPTIONS: ValidationPipeOptions = {
 
 export const DEFAULT_PAGINATION_PAGE_SIZE = {
   USER: 10,
+  ORDER: 5,
 } as const satisfies Record<string, number>;
