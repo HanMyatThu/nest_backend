@@ -8,5 +8,7 @@ export default new DataSource({
   port: 5432,
   database: "postgres",
   entities: ['dist/domain/**/*.entity.js'],
-  migrations: ['dist/domain/migrations/*.js'],
+  migrations: ['dist/database/migrations/*.js'],
+  synchronize: true,
+  logging: false,
 })

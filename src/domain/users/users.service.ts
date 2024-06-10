@@ -4,6 +4,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { PaginationDto } from 'common/dto/pagination.dto';
+import { DEFAULT_PAGINATION_PAGE_SIZE } from 'common/utils/common.constants';
 
 @Injectable()
 export class UsersService {
@@ -15,11 +17,16 @@ export class UsersService {
 
   create(createUserDto: CreateUserDto) {
     const user = this.usersRespository.create(createUserDto);
+    console.log(user,'user')
     return this.usersRespository.save(user);
   }
 
-  async findAll() {
-    const user = await this.usersRespository.find();
+  async findAll(paginationDto: PaginationDto) {
+    const { limit, offset} = paginationDto;
+    const user = await this.usersRespository.find({
+      skip: offset,
+      take: limit ?? DEFAULT_PAGINATION_PAGE_SIZE.USER
+    });
     return user;
   }
 
