@@ -4,6 +4,7 @@ import { Payment } from "payments/entities/payment.entity";
 import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "users/entities/user.entity";
 import { OrderItem } from "./order-item.entity";
+import { Expose } from "class-transformer";
 
 @Entity()
 export class Order {
@@ -29,4 +30,9 @@ export class Order {
 
   @Column(() => RegistryDates, { prefix: false })
   registryDates: RegistryDates;
+
+  @Expose()
+  get total() {
+    return this.items?.reduce((prev, current) => prev + current.subTotal, 0); 
+  }
 }
