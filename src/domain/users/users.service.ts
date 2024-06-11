@@ -17,7 +17,6 @@ export class UsersService {
 
   create(createUserDto: CreateUserDto) {
     const user = this.usersRespository.create(createUserDto);
-    console.log(user,'user')
     return this.usersRespository.save(user);
   }
 
@@ -55,7 +54,7 @@ export class UsersService {
   }
 
   async remove(id: number) {
-    const user = await await this.findOne(id);
+    const user = await this.findOne(id);
     return this.usersRespository.remove(user);
   }
 }
