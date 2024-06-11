@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { IdDto } from 'common/dto/id.dto';
 import { PaginationDto } from 'common/dto/pagination.dto';
+import { RemoveDto } from 'common/dto/remove.dto';
 
 @Controller('users')
 export class UsersController {
@@ -21,16 +22,21 @@ export class UsersController {
 
   @Get(':id')
   findOne(@Param() { id }: IdDto) {
-    return this.usersService.findOne(+id);
+    return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param() { id }: IdDto, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param() { id }: IdDto) {
-    return this.usersService.remove(+id);
+  remove(@Param() { id }: IdDto, @Query() {soft}: RemoveDto) {
+    return this.usersService.remove(id, soft);
+  }
+
+  @Patch(':id/recover')
+  recover(@Param() { id }: IdDto) {
+    return this.usersService.recover(id);
   }
 }

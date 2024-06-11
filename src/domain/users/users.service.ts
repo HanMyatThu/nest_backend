@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { RegistryDates } from 'common/embedded/registry-dates.embedded';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,7 +34,10 @@ export class UsersService {
     const user = await this.usersRespository.findOne({ 
       where: { id },
       relations: {
-        orders: true,
+        orders: {
+          items: true,
+          payment: true,
+        },
       } 
     });
     if (!user) {
@@ -53,8 +57,32 @@ export class UsersService {
     return this.usersRespository.save(user);
   }
 
-  async remove(id: number) {
+  async remove(id: number, soft: boolean) {
     const user = await this.findOne(id);
-    return this.usersRespository.remove(user);
+    return soft
+      ? this.usersRespository.softRemove(user)
+      : this.usersRespository.remove(user);
+  }
+
+  async recover(id: number) {
+    const user = await this.usersRespository.findOne({
+      where: { id },
+      relations: {
+        orders: {
+          items: true,
+          payment: true,
+        },
+      },
+      withDeleted: true
+    })
+
+    if (!user) {
+      throw new NotFoundException('User Not Found');
+    }
+    if (!user.isDeleted) {
+      throw new ConflictException('User is not deleted');
+    }
+
+    return this.usersRespository.recover(user);
   }
 }
