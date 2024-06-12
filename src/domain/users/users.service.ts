@@ -1,3 +1,4 @@
+import { IsPassword } from './../../common/decorators/validators/is-password.decorator';
 import { RegistryDates } from 'common/embedded/registry-dates.embedded';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -7,6 +8,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { PaginationDto } from 'common/dto/pagination.dto';
 import { DEFAULT_PAGINATION_PAGE_SIZE } from 'common/utils/common.constants';
+import { genSalt, hash } from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -16,8 +18,13 @@ export class UsersService {
     private readonly usersRespository: Repository<User>
   ) {}
 
-  create(createUserDto: CreateUserDto) {
-    const user = this.usersRespository.create(createUserDto);
+  async create(createUserDto: CreateUserDto) {
+    const { password } = createUserDto;
+    const hashedPassword: string = await this.hashPassword(password);
+    const user = this.usersRespository.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
     return this.usersRespository.save(user);
   }
 
@@ -47,9 +54,13 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
+    const { password } = updateUserDto;
+    const hashPassword = password ? await this.hashPassword(password) : password;
+    
     const user = await this.usersRespository.preload({
       id,
-      ...updateUserDto
+      ...updateUserDto,
+      password: hashPassword
     })
     if (!user) {
       throw new NotFoundException('User notfound')
@@ -84,5 +95,12 @@ export class UsersService {
     }
 
     return this.usersRespository.recover(user);
+  }
+
+  private async hashPassword (password: string) {
+    const salt = await genSalt();
+
+    const hashPassword = hash(password, salt);
+    return hashPassword;
   }
 }
