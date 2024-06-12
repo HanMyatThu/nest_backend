@@ -6,7 +6,6 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { PaginationDto } from 'common/dto/pagination.dto';
 import { DEFAULT_PAGINATION_PAGE_SIZE } from 'common/utils/common.constants';
-import { HashingService } from 'auth/hashing/hashing.service';
 
 @Injectable()
 export class UsersService {
@@ -14,15 +13,11 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly usersRespository: Repository<User>,
-    private readonly hashingService: HashingService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const { password } = createUserDto;
-    const hashedPassword: string = await this.hashingService.hash(password);
     const user = this.usersRespository.create({
-      ...createUserDto,
-      password: hashedPassword,
+      ...createUserDto
     });
     return this.usersRespository.save(user);
   }
@@ -53,13 +48,9 @@ export class UsersService {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const { password } = updateUserDto;
-    const hashPassword = password ? await this.hashingService.hash(password) : password;
-
     const user = await this.usersRespository.preload({
       id,
       ...updateUserDto,
-      password: hashPassword
     })
     if (!user) {
       throw new NotFoundException('User notfound')
