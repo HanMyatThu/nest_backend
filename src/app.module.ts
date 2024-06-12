@@ -7,8 +7,9 @@ import { OrderModule } from './domain/order/order.module';
 import { PaymentsModule } from './domain/payments/payments.module';
 import { CategoriesModule } from './domain/categories/categories.module';
 import { ProductsModule } from './domain/products/products.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [UsersModule, CommonModule, DatabaseModule, EnvModule, OrderModule, PaymentsModule, CategoriesModule, ProductsModule],
+  imports: [UsersModule, CommonModule, DatabaseModule, EnvModule, OrderModule, PaymentsModule, CategoriesModule, ProductsModule, AuthModule],
 })
 export class AppModule {}

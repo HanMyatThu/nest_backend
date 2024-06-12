@@ -1,5 +1,3 @@
-import { IsPassword } from './../../common/decorators/validators/is-password.decorator';
-import { RegistryDates } from 'common/embedded/registry-dates.embedded';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -8,19 +6,20 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { PaginationDto } from 'common/dto/pagination.dto';
 import { DEFAULT_PAGINATION_PAGE_SIZE } from 'common/utils/common.constants';
-import { genSalt, hash } from 'bcrypt';
+import { HashingService } from 'auth/hashing/hashing.service';
 
 @Injectable()
 export class UsersService {
 
   constructor(
     @InjectRepository(User)
-    private readonly usersRespository: Repository<User>
+    private readonly usersRespository: Repository<User>,
+    private readonly hashingService: HashingService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
     const { password } = createUserDto;
-    const hashedPassword: string = await this.hashPassword(password);
+    const hashedPassword: string = await this.hashingService.hash(password);
     const user = this.usersRespository.create({
       ...createUserDto,
       password: hashedPassword,
@@ -55,8 +54,8 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto) {
     const { password } = updateUserDto;
-    const hashPassword = password ? await this.hashPassword(password) : password;
-    
+    const hashPassword = password ? await this.hashingService.hash(password) : password;
+
     const user = await this.usersRespository.preload({
       id,
       ...updateUserDto,
@@ -95,12 +94,5 @@ export class UsersService {
     }
 
     return this.usersRespository.recover(user);
-  }
-
-  private async hashPassword (password: string) {
-    const salt = await genSalt();
-
-    const hashPassword = hash(password, salt);
-    return hashPassword;
   }
 }
