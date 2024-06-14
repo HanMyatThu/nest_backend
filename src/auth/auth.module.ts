@@ -8,9 +8,20 @@ import { User } from 'users/entities/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { localStrategy } from './strategies/local.strategies';
 import { LoginValidationMiddleware } from './middleware/login-validation/login-validation.middleware';
+import { JwtModule } from '@nestjs/jwt';
+import jwtConfig from './config/jwt.config';
+import { ConfigModule } from '@nestjs/config';
+import { JwtStrategy } from './strategies/jwt.strategies';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), PassportModule],
+  imports: [
+    TypeOrmModule.forFeature([User]),
+    PassportModule,
+    JwtModule.registerAsync(jwtConfig.asProvider()),
+    ConfigModule.forFeature(jwtConfig),
+  ],
   controllers: [AuthController],
   providers: [AuthService,
     {
@@ -18,6 +29,11 @@ import { LoginValidationMiddleware } from './middleware/login-validation/login-v
       useClass: BcryptService,
     },
     localStrategy, 
+    JwtStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard
+    }
   ],
   exports: [HashingService]
 })
